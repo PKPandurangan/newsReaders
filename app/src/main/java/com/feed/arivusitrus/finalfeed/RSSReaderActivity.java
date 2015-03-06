@@ -10,11 +10,13 @@ import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,15 +37,15 @@ import javax.xml.parsers.SAXParserFactory;
 
 public class RSSReaderActivity extends ListActivity {
     private ArrayList<RSSItem> itemlist = null;
-    private RSSListAdaptor rssadaptor = null;
+    public RSSListAdaptor rssadaptor = null;
     RSSItem data;
-
+    ListView lv;ArrayList<String> results = new ArrayList<String>();
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
         itemlist = new ArrayList<RSSItem>();
-
+        lv = (ListView) findViewById(R.id.rssChannelListView);
         new RetrieveRSSFeeds().execute();
         if (isConnected()) {
             // tvIsConnected.setBackgroundColor(0xFF00CC00);
@@ -51,6 +53,8 @@ public class RSSReaderActivity extends ListActivity {
                     .show();
 
         } else {
+            Intent i = new Intent(this,Second.class);
+            startActivity(i);
             Toast.makeText(getApplicationContext(), "Not Connected", Toast.LENGTH_LONG)
                     .show();
         }
@@ -157,7 +161,7 @@ public class RSSReaderActivity extends ListActivity {
         }
     }
 
-    private class RSSListAdaptor extends ArrayAdapter<RSSItem>{
+    public class RSSListAdaptor extends ArrayAdapter<RSSItem>{
         private List<RSSItem> objects = null;
 
         public RSSListAdaptor(Context context, int textviewid, List<RSSItem> objects) {
@@ -199,39 +203,80 @@ public class RSSReaderActivity extends ListActivity {
                TextView description = (TextView)view.findViewById(R.id.txtDescription);
 String s= String.valueOf(title);
                 title.setText(data.title);
-//Toast.makeText(getApplicationContext(),s,Toast.LENGTH_LONG).show();
+
 
                 date.setText("on " + data.date);
                description.setText(data.description);
-
-               // String s1= String.valueOf(date);
-                //String s2= String.valueOf(description);
-               /* DataBaseHub dbh=new DataBaseHub(RSSReaderActivity.this);
+                DataBaseHub dbh=new DataBaseHub(RSSReaderActivity.this);
                 SQLiteDatabase db=dbh.getWritableDatabase();
                 ContentValues cv=new ContentValues();
-                cv.put(DataBaseHub.Eid,k.title);
-                cv.put(DataBaseHub.Ename,"Test");
-                cv.put(DataBaseHub.Eadd,"Ok");
-                db.insert(DataBaseHub.Emp1, null, cv);
-                Toast.makeText(getApplicationContext(),"Added",Toast.LENGTH_LONG);*/
+                for (int i=0; i<itemlist.size(); i++)
+                {
+                    //  itemlist.get(i);
+
+                    cv.put(DataBaseHub.Eid, String.valueOf( itemlist.get(i)));
+                    Log.i("item", String.valueOf(itemlist.get(i)));
+                    cv.put(DataBaseHub.Ename,String.valueOf( itemlist.get(i)));
+                    cv.put(DataBaseHub.Eadd,String.valueOf( itemlist.get(i)));
+
+                    db.insert(DataBaseHub.Emp1, null, cv);
+                    Toast.makeText(getApplicationContext(),"Hey",Toast.LENGTH_LONG).show();
+                }
+
+
+                SQLiteDatabase db1 = dbh.getReadableDatabase();
+
+                boolean st=true;
+                lv.setAdapter(null);
+                Cursor cursor = db1.query("Emp1", null, null, null, null, null,
+                        null, null);
+                if (cursor != null)
+                    if (cursor.moveToFirst()) {
+                        do {
+                            String name1 = cursor.getString(cursor
+                                    .getColumnIndex("Ename"));
+                            String add = cursor.getString(cursor
+                                    .getColumnIndex("Eadd"));
+                            Integer id = cursor.getInt(cursor
+                                    .getColumnIndex("Eid"));
+                            if(st)
+                            {
+                                results.add("Id:" + id + "\nName:" + name1
+                                        + "\nAddress:" + add + "\n");
+                            }
+                        } while (cursor.moveToNext());
+                    }
+                lv.setAdapter(new ArrayAdapter<String>(
+                        RSSReaderActivity.this, android.R.layout.simple_list_item_1,
+                        results));
+
+
+                Toast.makeText(getApplicationContext(),"Added",Toast.LENGTH_LONG);
             }
-            database();
+           // database();
+           // Toast.makeText(getApplicationContext(),"Added",Toast.LENGTH_LONG);
             return view;
            // database();
         }
 
     }
-    public void database()
+   /* public void database()
     {
 
-        DataBaseHub dbh=new DataBaseHub(this);
+       DataBaseHub dbh=new DataBaseHub(this);
         SQLiteDatabase db=dbh.getWritableDatabase();
         ContentValues cv=new ContentValues();
-        cv.put(DataBaseHub.Eid, String.valueOf(data.title));
-        cv.put(DataBaseHub.Ename,String.valueOf(data.date));
-        cv.put(DataBaseHub.Eadd,String.valueOf(data.description));
-        db.insert(DataBaseHub.Emp1, null, cv);
+        for (int i=0; i<itemlist.size(); i++)
+        {
+          //  itemlist.get(i);
+            cv.put(DataBaseHub.Eid, String.valueOf( itemlist.get(i)));
+            Log.i("item", String.valueOf(itemlist.get(i)));
+            cv.put(DataBaseHub.Ename,String.valueOf( itemlist.get(i)));
+            cv.put(DataBaseHub.Eadd,String.valueOf( itemlist.get(i)));
+            db.insert(DataBaseHub.Emp1, null, cv);
+        }
+
         Toast.makeText(getApplicationContext(),"Added",Toast.LENGTH_LONG);
     }
-
+*/
 }
