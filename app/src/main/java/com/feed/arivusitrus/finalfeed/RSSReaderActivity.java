@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -30,7 +29,6 @@ import android.widget.Toast;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
-import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,15 +39,21 @@ import javax.xml.parsers.SAXParserFactory;
 public class RSSReaderActivity extends ListActivity {
     private ArrayList<RSSItem> itemlist = null;
     public RSSListAdaptor rssadaptor = null;
-    RSSItem data;private SQLiteDatabase newDB;Button insert;
-    TextView title,date,description;
-    ListView lv;ArrayList<String> results = new ArrayList<String>();
+    RSSItem data;
+    private SQLiteDatabase newDB;
+    Button insert;
+    TextView title, date, description;
+    ListView lv,lv1; DataBaseHub db;
+    ArrayList<String> results = new ArrayList<String>();
+    ArrayList arrayList = new ArrayList();
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        insert=(Button)findViewById(R.id.buttoninsert);
+        insert = (Button) findViewById(R.id.buttoninsert);
         itemlist = new ArrayList<RSSItem>();
+        db = new DataBaseHub(this);
         lv = (ListView) findViewById(R.id.rssChannelListView);
+        lv1 = (ListView) findViewById(R.id.listView2);
         new RetrieveRSSFeeds().execute();
         if (isConnected()) {
             // tvIsConnected.setBackgroundColor(0xFF00CC00);
@@ -64,13 +68,16 @@ public class RSSReaderActivity extends ListActivity {
         insert.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                displayResultList();
+                get();
+               // Intent intent = new Intent(RSSReaderActivity.this, Third.class);
+               // intent.putExtra("ArrayList", arrayList);
+               // startActivity(intent);
+              //  finish();
 
             }
         });
-       // displayResultList();
-        openAndQueryDatabase();
+        // displayResultList();
+
     }
 
     private boolean isConnected() {
@@ -87,8 +94,8 @@ public class RSSReaderActivity extends ListActivity {
         super.onListItemClick(l, v, position, id);
 
         data = itemlist.get(position);
-        Intent i = new Intent(this,Second.class);
-        String s=data.link;
+        Intent i = new Intent(this, Second.class);
+        String s = data.link;
         i.putExtra("myname", s);
         startActivity(i);
        /* DataBaseHub dbh = new DataBaseHub(RSSReaderActivity.this);
@@ -110,10 +117,8 @@ public class RSSReaderActivity extends ListActivity {
         //*/
     }
 
-    private void retrieveRSSFeed(String urlToRssFeed,ArrayList<RSSItem> list)
-    {
-        try
-        {
+    private void retrieveRSSFeed(String urlToRssFeed, ArrayList<RSSItem> list) {
+        try {
             URL url = new URL(urlToRssFeed);
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser parser = factory.newSAXParser();
@@ -125,22 +130,19 @@ public class RSSReaderActivity extends ListActivity {
             InputSource is = new InputSource(url.openStream());
 
             xmlreader.parse(is);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private class RetrieveRSSFeeds extends AsyncTask<Void, Void, Void>
-    {
+    private class RetrieveRSSFeeds extends AsyncTask<Void, Void, Void> {
         private ProgressDialog progress = null;
 
         @Override
         protected Void doInBackground(Void... params) {
-            retrieveRSSFeed("http://www.nasa.gov/rss/dyn/image_of_the_day.rss",itemlist);
+            retrieveRSSFeed("http://www.thehindu.com/news/cities/Hyderabad/?service=rss", itemlist);
 
-            rssadaptor = new RSSListAdaptor(RSSReaderActivity.this, R.layout.rssitemview,itemlist);
+            rssadaptor = new RSSListAdaptor(RSSReaderActivity.this, R.layout.rssitemview, itemlist);
 
             return null;
         }
@@ -173,7 +175,7 @@ public class RSSReaderActivity extends ListActivity {
         }
     }
 
-    public class RSSListAdaptor extends ArrayAdapter<RSSItem>{
+    public class RSSListAdaptor extends ArrayAdapter<RSSItem> {
         private List<RSSItem> objects = null;
 
         public RSSListAdaptor(Context context, int textviewid, List<RSSItem> objects) {
@@ -200,52 +202,78 @@ public class RSSReaderActivity extends ListActivity {
         public View getView(int position, View convertView, ViewGroup parent) {
             View view = convertView;
 
-            if(null == view)
-            {
-                LayoutInflater vi = (LayoutInflater)RSSReaderActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            if (null == view) {
+                LayoutInflater vi = (LayoutInflater) RSSReaderActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 view = vi.inflate(R.layout.rssitemview, null);
             }
 
-           data = objects.get(position);
+            data = objects.get(position);
 
-            if(null != data)
-            {
-                title = (TextView)view.findViewById(R.id.txtTitle);
-               date = (TextView)view.findViewById(R.id.txtDate);
-                description = (TextView)view.findViewById(R.id.txtDescription);
-String s= String.valueOf(title);
+            if (null != data) {
+                title = (TextView) view.findViewById(R.id.txtTitle);
+                date = (TextView) view.findViewById(R.id.txtDate);
+                description = (TextView) view.findViewById(R.id.txtDescription);
+                String s = String.valueOf(title);
                 title.setText(data.title);
 
 
                 date.setText("on " + data.date);
-               description.setText(data.description);
-                DataBaseHub dbh=new DataBaseHub(RSSReaderActivity.this);
-              newDB=dbh.getWritableDatabase();
-                ContentValues cv=new ContentValues();
-                for (int i=0; i<itemlist.size(); i++)
-                {
-                    //  itemlist.get(i);
-
-                    cv.put(DataBaseHub.Eid, String.valueOf( itemlist.get(i)));
-                    Log.i("item", String.valueOf(itemlist.get(i)));
-                    cv.put(DataBaseHub.Ename,String.valueOf( itemlist.get(i)));
-                    cv.put(DataBaseHub.Eadd,String.valueOf( itemlist.get(i)));
-
-                   newDB.insert(DataBaseHub.Emp1, null, cv);
-                    Toast.makeText(getApplicationContext(),"Hey",Toast.LENGTH_LONG).show();
-                }
+                description.setText(data.description);
 
 
-              //  rssadaptor = new RSSListAdaptor(RSSReaderActivity.this, R.layout.rssitemview,result);
-                Toast.makeText(getApplicationContext(),"Added",Toast.LENGTH_LONG);
+
+               // Toast.makeText(getApplicationContext(), "Added", Toast.LENGTH_LONG);
             }
-           // database();
-           // Toast.makeText(getApplicationContext(),"Added",Toast.LENGTH_LONG);
+          //  get();
+            // Toast.makeText(getApplicationContext(),"Added",Toast.LENGTH_LONG);
             return view;
-           // database();
+            // database();
+
         }
 
-    }
+
+
+
+
+}
+
+
+    public void get() {
+
+        for (RSSItem s : itemlist) {
+            //  itemlist.get(i);
+
+            arrayList.add(String.valueOf(s.title));
+            arrayList.add(String.valueOf(s.link));
+            arrayList.add(String.valueOf(s.description));
+        }
+
+            db.addListItem(arrayList);
+            Cursor cursor = db.getListItem();
+            if (cursor != null) {
+                cursor.moveToNext();
+
+                do {
+
+                   // String name = cursor.getString();
+                    String title = cursor.getString(cursor
+                            .getColumnIndex("Eid"));
+                    String link = cursor.getString(cursor
+                            .getColumnIndex("Ename"));
+                    String desc=cursor.getString(cursor
+                            .getColumnIndex("Eadd"));
+                   // Log.e("hey==", "" + name);
+                    results.add("Title" + title
+                            + "\nlink" + link + "\n"+"\nDesc" +desc + "\n");
+
+                } while (cursor.moveToNext());
+
+            }lv1.setAdapter(new ArrayAdapter<String>(
+                    RSSReaderActivity.this, android.R.layout.simple_list_item_1,
+                    results));
+
+            Toast.makeText(getApplicationContext(), "Hey", Toast.LENGTH_LONG).show();
+
    /* public void database()
     {
 
@@ -265,50 +293,6 @@ String s= String.valueOf(title);
         Toast.makeText(getApplicationContext(),"Added",Toast.LENGTH_LONG);
     }
 */
-   private void displayResultList() {
-       TextView tView = new TextView(this);
-     tView.setText(data.title);
-       //title.setText("Hey");
 
 
-      // date.setText("on " + data.date);
-       //description.setText(data.description);
-     getListView().addHeaderView(tView);
-
-       setListAdapter(new ArrayAdapter<String>( RSSReaderActivity.this, R.layout.rssitemview, results));
-       getListView().setTextFilterEnabled(true);
-
-   }
-    private void openAndQueryDatabase() {
-        try {
-        DataBaseHub dbHelper = new DataBaseHub(this.getApplicationContext());
-            newDB = dbHelper.getWritableDatabase();
-            Cursor c = newDB.rawQuery("SELECT * FROM " +
-                    "Emp1" , null);
-
-            if (c != null ) {
-                if  (c.moveToFirst()) {
-                    do {
-                        String name = c.getString(c
-                                .getColumnIndex("Ename"));
-                        String add = c.getString(c
-                                .getColumnIndex("Eadd"));
-                        Integer id = c.getInt(c
-                                .getColumnIndex("Eid"));
-                    results.add("Id:" + id + "\nName:" + name
-                                + "\nAddress:" + add + "\n");
-                    }while (c.moveToNext());
-                }
-            }
-        } catch (SQLiteException se ) {
-            Log.e(getClass().getSimpleName(), "Could not" +
-                    " create or Open the database");
-        } finally {
-            if (newDB != null)
-                newDB.execSQL("DELETE FROM " +"Emp1");
-            newDB.close();
-        }
-
-    }
-    
-}
+    }}

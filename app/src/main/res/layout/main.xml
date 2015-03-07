@@ -4,10 +4,21 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
 
+    <Button android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="Insert"
+        android:id="@+id/buttoninsert"/>
     <ListView
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="241dp"
         android:id="@android:id/list"
         />
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/listView2"
+        android:layout_gravity="center_horizontal" />
+
 
 </LinearLayout>
