@@ -55,7 +55,7 @@ public class RSSParser extends DefaultHandler {
 
             itemarray.add(currentitem);
 
-      for (RSSItem s : itemarray){
+     /* for (RSSItem s : itemarray){
                 //s.getTitle();
                // RSSDatabaseHandler.addSite(s);
 
@@ -65,7 +65,7 @@ public class RSSParser extends DefaultHandler {
          // RSSReaderActivity nam = new RSSReaderActivity();
         //  nam.database(itemarray);
                 //Log.i("My array list content: ", String.valueOf(s.title));
-            }
+            }*/
         }
         else
         {
@@ -93,7 +93,7 @@ public class RSSParser extends DefaultHandler {
                 switch(currentindex)
                 {
                     case 0: currentitem.title = builder.toString();
-                        Log.i("Title", String.valueOf(currentitem.title));
+                        //Log.i("Title", String.valueOf(currentitem.title));
                    // Second s=new Second(String.valueOf(currentitem.title));
 
                        //Toast.makeText(this, String.valueOf(currentitem.title), Toast.LENGTH_LONG).show();
@@ -103,16 +103,16 @@ public class RSSParser extends DefaultHandler {
 
                         break;
                     case 1: currentitem.link = builder.toString();
-                       Log.i("Link", String.valueOf(currentitem.link));
+                     //  Log.i("Link", String.valueOf(currentitem.link));
 
                       //  nam.get(String.valueOf(currentitem.link));
                         break;
                     case 2: currentitem.date = builder.toString();
-                        Log.i("Date", String.valueOf(currentitem.date));
+                     //   Log.i("Date", String.valueOf(currentitem.date));
                      //   nam.get(String.valueOf(currentitem.date));
                         break;
                     case 3: currentitem.description= builder.toString();
-                        Log.i("Date", String.valueOf(currentitem.description));
+                       // Log.i("Date", String.valueOf(currentitem.description));
                         break;
                       /* Second s1=new Second(); */
 

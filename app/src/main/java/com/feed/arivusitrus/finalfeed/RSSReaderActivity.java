@@ -12,14 +12,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -32,6 +39,7 @@ import org.xml.sax.XMLReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -41,7 +49,7 @@ public class RSSReaderActivity extends ListActivity {
     public RSSListAdaptor rssadaptor = null;
     RSSItem data;
     private SQLiteDatabase newDB;
-    Button insert;
+    Button insert,ref;
     TextView title, date, description;
     ListView lv,lv1; DataBaseHub db;
     ArrayList<String> results = new ArrayList<String>();
@@ -49,12 +57,16 @@ public class RSSReaderActivity extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        insert = (Button) findViewById(R.id.buttoninsert);
+        insert = (Button) findViewById(R.id.button1);
+        //ref = (Button) findViewById(R.id.button2);
         itemlist = new ArrayList<RSSItem>();
         db = new DataBaseHub(this);
         lv = (ListView) findViewById(R.id.rssChannelListView);
-        lv1 = (ListView) findViewById(R.id.listView2);
+
+      //  lv1 = (ListView) findViewById(R.id.listView2);
         new RetrieveRSSFeeds().execute();
+
+
         if (isConnected()) {
             // tvIsConnected.setBackgroundColor(0xFF00CC00);
             Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_LONG)
@@ -68,7 +80,7 @@ public class RSSReaderActivity extends ListActivity {
         insert.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                get();
+               get();
                // Intent intent = new Intent(RSSReaderActivity.this, Third.class);
                // intent.putExtra("ArrayList", arrayList);
                // startActivity(intent);
@@ -76,7 +88,13 @@ public class RSSReaderActivity extends ListActivity {
 
             }
         });
-        // displayResultList();
+        /*ref.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+            }
+        });*/
 
     }
 
@@ -167,6 +185,7 @@ public class RSSReaderActivity extends ListActivity {
             progress.dismiss();
 
             super.onPostExecute(result);
+
         }
 
         @Override
@@ -205,6 +224,7 @@ public class RSSReaderActivity extends ListActivity {
             if (null == view) {
                 LayoutInflater vi = (LayoutInflater) RSSReaderActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 view = vi.inflate(R.layout.rssitemview, null);
+//get();
             }
 
             data = objects.get(position);
@@ -235,7 +255,10 @@ public class RSSReaderActivity extends ListActivity {
 
 
 
-}
+
+
+
+    }
 
 
     public void get() {
@@ -243,34 +266,31 @@ public class RSSReaderActivity extends ListActivity {
         for (RSSItem s : itemlist) {
             //  itemlist.get(i);
 
-            arrayList.add(String.valueOf(s.title));
-            arrayList.add(String.valueOf(s.link));
-            arrayList.add(String.valueOf(s.description));
+            arrayList.add(String.valueOf(s.title)+"                                   on  "+String.valueOf(s.date)
+                    +"        "+String.valueOf(s.description));
+            //db.isSiteExists(String.valueOf(s.title));
         }
 
             db.addListItem(arrayList);
+
             Cursor cursor = db.getListItem();
             if (cursor != null) {
                 cursor.moveToNext();
 
-                do {
+                    do {
 
-                   // String name = cursor.getString();
-                    String title = cursor.getString(cursor
-                            .getColumnIndex("Eid"));
-                    String link = cursor.getString(cursor
-                            .getColumnIndex("Ename"));
-                    String desc=cursor.getString(cursor
-                            .getColumnIndex("Eadd"));
-                   // Log.e("hey==", "" + name);
-                    results.add("Title" + title
-                            + "\nlink" + link + "\n"+"\nDesc" +desc + "\n");
 
-                } while (cursor.moveToNext());
+                        String add = cursor.getString(cursor
+                                .getColumnIndex("listitem"));
 
-            }lv1.setAdapter(new ArrayAdapter<String>(
-                    RSSReaderActivity.this, android.R.layout.simple_list_item_1,
-                    results));
+                        results.add( add );
+
+                    } while (cursor.moveToNext());
+                }
+      //  db.UpdateNote(results);
+        Intent it=new Intent(RSSReaderActivity.this,Third.class);
+        it.putExtra("value", results);
+        startActivity(it);
 
             Toast.makeText(getApplicationContext(), "Hey", Toast.LENGTH_LONG).show();
 
@@ -295,4 +315,8 @@ public class RSSReaderActivity extends ListActivity {
 */
 
 
-    }}
+    }
+
+
+
+}

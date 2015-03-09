@@ -40,18 +40,7 @@ public class Second extends Activity {
         setContentView(mWebview );
 
     }
-public void database(RSSItem k)
-{
 
-    DataBaseHub dbh=new DataBaseHub(this);
-    SQLiteDatabase db=dbh.getWritableDatabase();
-    ContentValues cv=new ContentValues();
-    cv.put(DataBaseHub.Eid,k.title);
-    cv.put(DataBaseHub.Ename,"Test");
-    cv.put(DataBaseHub.Eadd,"Ok");
-    db.insert(DataBaseHub.Emp1, null, cv);
-    Toast.makeText(getApplicationContext(),"Added",Toast.LENGTH_LONG);
-}
 }
 
 
